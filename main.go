@@ -3,11 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 )
 
-const ERRORS_COUNT = 5
+const errorsCount = 5
 
 func main() {
 	var funcs []func() error
@@ -20,7 +21,7 @@ func main() {
 		})
 	}
 
-	var c = make(chan error, ERRORS_COUNT)
+	var c = make(chan error, len(funcs))
 	wg := sync.WaitGroup{}
 
 	for _, f := range funcs {
@@ -29,8 +30,8 @@ func main() {
 			err := f()
 			if err != nil {
 				allErr <- err
-				if len(allErr) == cap(allErr) {
-					panic("too many errors")
+				if len(allErr) == errorsCount {
+					log.Fatal("too many errors")
 				}
 			}
 			wgrp.Done()
